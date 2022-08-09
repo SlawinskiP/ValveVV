@@ -9,7 +9,7 @@ T_w = 4.5                     #working temperature, K
 T_op = 14.7                   #opening temperature, K
 m = 2808                      #mass flow, kg/h
 fluid = "helium"
-K_dr = 0.55                   #derated coefficient of discharge, -
+#K_dr = 0.55                   #derated coefficient of discharge, -
 
 #Calculations:
 def diameter(p_op, p_b, T_op, m, fluid, K_dr):
@@ -23,16 +23,31 @@ def diameter(p_op, p_b, T_op, m, fluid, K_dr):
     M = PropsSI("M", "T", T_op, "P", p_r * 10 ** 5, fluid) * 1000        #molar mass, kg/kmol
     Z = PropsSI("Z", "T", T_op, "P", p_r * 10 ** 5, fluid)               #compressibility factor, -
     if L <= R:
-        flow_character = "Critical flow occurs:"
+#        flow_character = "Critical flow occurs:"
         A = m / (p_r * C * K_dr * math.sqrt(M / (Z * T_op)))             #flow area of a safety valve, mm2
         d_min = math.sqrt(4 * A / 3.14)                                  #minimum bore area, mm
     else:
-        flow_character = "Subritical flow occurs:"
+#        flow_character = "Subritical flow occurs:"
         K_b = math.sqrt(((2 * k / (k - 1)) * ((p_b / p_r) ** (2 / k) - (p_b / p_r) ** ((k + 1) / k))) / (k * (2 / (k + 1)) ** ((k + 1) / (k - 1))))
         A = m / (p_r * C * K_dr * K_b * math.sqrt(M /(Z * T_op)))
         d_min = math.sqrt(4 * A / 3.14)
-    return (flow_character, round(A, 2), round(d_min, 2))
+#    return (flow_character, round(A, 2), round(d_min, 2))
+    return(round(d_min, 2))
+#print(diameter(p_op, p_b, T_op, m, fluid, K_dr)[0])
+#print("Minimum bore area: ", diameter(p_op, p_b, T_op, m, fluid, K_dr)[1], "mm2")
+#print("Minimum bore diameter: ", diameter(p_op, p_b, T_op, m, fluid, K_dr)[2], "mm")
 
-print(diameter(p_op, p_b, T_op, m, fluid, K_dr)[0])
-print("Minimum bore area: ", diameter(p_op, p_b, T_op, m, fluid, K_dr)[1], "mm2")
-print("Minimum bore diameter: ", diameter(p_op, p_b, T_op, m, fluid, K_dr)[2], "mm")
+K_dr_min = 0.5
+K_dr_max = 1
+K_dr_x = 10
+K_dr_list = np.linspace(K_dr_min, K_dr_max, K_dr_x)
+d_min_list = []
+for i in range(len(K_dr_list)):
+    K_dr = K_dr_list[i]
+    results = diameter(p_op, p_b, T_op, m, fluid, K_dr)
+    d_min_list.append(results)
+plt.figure("Minimum bore diameter in function of derated coefficient of discharge")
+plt.plot(K_dr_list, d_min_list)
+plt.xlabel("Derated coefficient of discharge, -")
+plt.ylabel("Bore diameter, mm")
+plt.show()
